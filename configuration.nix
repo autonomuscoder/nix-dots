@@ -4,13 +4,7 @@
 
 { config, pkgs, ... }:
 
-
 {
-
-  nixpkgs.config.permittedInsecurePackages = [
-                "openssl-1.1.1u"
-		"python-2.7.18.6"
-              ];
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
@@ -18,11 +12,11 @@
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 2;
   boot.loader.efi.canTouchEfiVariables = true;
+	
+  boot.kernelPackages = pkgs.linuxPackages_6_4;
 
- # Kernel
-   boot.kernelPackages = pkgs.linuxPackages_6_3;
-  # boot.extraModulePackages = with config.boot.kernelPackages; [ wireguard ];
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -54,28 +48,28 @@
 
   # Configure keymap in X11
   services.xserver = {
-    enable = true;
     layout = "us";
     xkbVariant = "";
-
-   displayManager = {
-       sddm.enable = true;
-       defaultSession = "none+awesome";
-       };
-
-   windowManager.awesome = {
-       enable = true;
-       luaModules = with pkgs.luaPackages; [
-        luarocks
-        luadbi-mysql
-        ];
-      };
+    enable = true;
+    windowManager.dwm.enable = true;
   };
 
+  services.xserver.displayManager = {
+     lightdm.enable = true;
+  };
+
+  nixpkgs.overlays = [
+          (final: prev: {
+	          dwm = prev.dwm.overrideAttrs (old: { src = /home/xero/github/Dwm/dwm ;});
+	          myslstatus = final.slstatus.overrideAttrs (_: { src = /home/xero/github/Dwm/slstatus;});
+		  })
+	];
+
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.nuhas = {
+  users.users.xero = {
     isNormalUser = true;
-    description = "nuhas";
+    description = "xero";
     extraGroups = [ "networkmanager" "wheel" "audio" "video" "storage" "optical" ];
     packages = with pkgs; [];
   };
@@ -86,53 +80,69 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-     brave
-     alacritty
-     xterm
-     brightnessctl
-     rofi
-     dmenu
-     nitrogen
-     picom
-     volumeicon
-     xfce.thunar
-     vscodium
-     git
-     neofetch
-     dunst
-     xclip
-     numlockx
-     htop
-     cbatticon
-     mate.atril
-     mate.eom
-     gnome.file-roller
-     lxappearance
-     tldr
-     ripgrep
-     curl
-     gh
-     gcc
-     github-desktop
-     gnugrep
-     gnumake
-     ninja
-     vlc
-     micro
-
+    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+    git
+    kitty
+    alacritty
+    nitrogen
+    picom
+    lxappearance
+    cbatticon
+    pcmanfm
+    xarchiver
+    unzip
+		unrar
+		gnutar
+    rofi
+    brave
+    neofetch 
+    htop
+    exa
+    bat
+    tldr
+    brightnessctl
+    slstatus
+    gcc
+    ripgrep
+    gnumake
+    materia-theme
+    colloid-icon-theme
+    nordic
+    dunst
+    numlockx
+    gh
+    ninja
+    gnugrep
+    curl
+    vim
+    xclip
+    nodejs_18
+    zoxide
+    starship
+    capitaine-cursors
+    networkmanagerapplet
+    volumeicon
+    vlc
+    vscodium
+		zathura
+		tmux
+		xfce.ristretto
+		pipes
+		fish
+		betterlockscreen
+		flameshot
+		transmission-gtk
+		pavucontrol
   ];
 
- # Storage configs
-   programs.thunar.plugins = with pkgs.xfce; [
-   thunar-archive-plugin
-   thunar-volman
- ];
+  # Fonts
+    fonts.fonts = with pkgs; [
+    (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" ]; })
+    ];
 
-  services.gvfs.enable = true; # Mount, trash, and other functionalities
-  services.tumbler.enable = true; # Thumbnail support for images
-
+    services.gvfs.enable = true; # Mount, trash, and other functionalities
+    services.tumbler.enable = true; # Thumbnail support for images
 
  # Sound configs
     hardware.pulseaudio.enable = true;
@@ -160,7 +170,6 @@
   };
 };
 
-
  # Video Driver
     hardware.opengl = {
     enable = true;
@@ -181,27 +190,12 @@
  # gtk themes
    programs.dconf.enable = true;
 
-
- # Fonts
-   fonts = {
-    fonts = with pkgs; [
-      noto-fonts
-      font-awesome
-      fantasque-sans-mono
-      jetbrains-mono
-      cascadia-code
-      source-han-sans
-      (nerdfonts.override { fonts = [ "Meslo" ]; })
-    ];
-    fontconfig = {
+  services.dbus.enable = true;
+    xdg.portal = {
       enable = true;
-      defaultFonts = {
-	      monospace = [ "Meslo LG M Regular Nerd Font Complete Mono" ];
-	      serif = [ "Noto Serif" "Source Han Serif" ];
-	      sansSerif = [ "Noto Sans" "Source Han Sans" ];
-      };
+      extraPortals = [pkgs.xdg-desktop-portal-gtk];
     };
-};
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -215,11 +209,6 @@
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
-    services.dbus.enable = true;
-    xdg.portal = {
-      enable = true;
-      extraPortals = [pkgs.xdg-desktop-portal-gtk];
-    };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
