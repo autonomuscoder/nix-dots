@@ -12,11 +12,10 @@
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.configurationLimit = 2;
   boot.loader.efi.canTouchEfiVariables = true;
-	
-  boot.kernelPackages = pkgs.linuxPackages_6_4;
+  boot.loader.systemd-boot.configurationLimit = 3;
 
+  boot.kernelPackages = pkgs.linuxPackages_zen;
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -51,26 +50,15 @@
     layout = "us";
     xkbVariant = "";
     enable = true;
-    windowManager.dwm.enable = true;
+    windowManager.qtile.enable = true;
+    displayManager.lightdm.enable = true;
   };
-
-  services.xserver.displayManager = {
-     lightdm.enable = true;
-  };
-
-  nixpkgs.overlays = [
-          (final: prev: {
-	          dwm = prev.dwm.overrideAttrs (old: { src = /home/xero/github/Dwm/dwm ;});
-	          myslstatus = final.slstatus.overrideAttrs (_: { src = /home/xero/github/Dwm/slstatus;});
-		  })
-	];
-
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.xero = {
+  users.users.abir = {
     isNormalUser = true;
-    description = "xero";
-    extraGroups = [ "networkmanager" "wheel" "audio" "video" "storage" "optical" ];
+    description = "abir";
+    extraGroups = [ "networkmanager" "wheel" "audio" "video" "optical" "storage" ];
     packages = with pkgs; [];
   };
 
@@ -80,78 +68,75 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
-    git
-    kitty
-    alacritty
-    nitrogen
-    picom
-    lxappearance
-    cbatticon
-    pcmanfm
-    xarchiver
-    unzip
-		unrar
-		gnutar
-    rofi
-    brave
-    neofetch 
-    htop
-    exa
-    bat
-    tldr
-    brightnessctl
-    slstatus
-    gcc
-    ripgrep
-    gnumake
-    materia-theme
-    colloid-icon-theme
-    nordic
-    dunst
-    numlockx
-    gh
-    ninja
-    gnugrep
-    curl
-    vim
-    xclip
-    nodejs_18
-    zoxide
-    starship
-    capitaine-cursors
-    networkmanagerapplet
-    volumeicon
-    vlc
-    vscodium
-		zathura
-		tmux
-		xfce.ristretto
-		pipes
-		fish
-		betterlockscreen
-		flameshot
-		transmission-gtk
-		pavucontrol
+     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+     python3
+     nitrogen
+     wget
+     brave
+     alacritty
+     xterm
+     rofi
+     xfce.thunar
+     xfce.thunar-volman
+     xfce.thunar-archive-plugin
+     brightnessctl
+     git
+     gh
+     dunst
+     cbatticon
+     xclip
+     zoxide
+     starship
+     volumeicon
+     picom
+     lxappearance
+     xarchiver
+     unzip
+     unrar
+     gnutar
+     neofetch
+     htop
+     eza
+     bat
+     tldr
+     gcc
+     ripgrep
+     gnumake
+     nordic
+     capitaine-cursors
+     curl
+     networkmanagerapplet
+     tmux
+     zathura
+     vscodium
+     pavucontrol
+     flameshot
+     fish
+     xfce.ristretto
+     ninja
+     numlockx
+     fd
+     fzf
+     vlc
+     nodejs_20
+     upscayl
   ];
 
-  # Fonts
-    fonts.fonts = with pkgs; [
+ # Fonts
+    fonts.packages= with pkgs; [
     (nerdfonts.override { fonts = [ "FiraCode" "JetBrainsMono" ]; })
     ];
 
-    services.gvfs.enable = true; # Mount, trash, and other functionalities
-    services.tumbler.enable = true; # Thumbnail support for images
+    services.gvfs.enable = true;
+    services.tumbler.enable = true;
 
- # Sound configs
+     # Sound configs
     hardware.pulseaudio.enable = true;
     hardware.pulseaudio.support32Bit = true;
     nixpkgs.config.pulseaudio = true;
     hardware.pulseaudio.extraConfig = "load-module module-combine-sink unload-module module-suspend-on-idle"; #Enabling modules 
 
-
- # Polkit
+# Polkit
     security.polkit.enable = true;
 
     systemd = {
@@ -191,10 +176,9 @@
    programs.dconf.enable = true;
 
   services.dbus.enable = true;
-    xdg.portal = {
-      enable = true;
-      extraPortals = [pkgs.xdg-desktop-portal-gtk];
-    };
+
+  #xdg.portal.enable = true;
+  #xdg.portal.extraPortals = [ "xdg-desktop-portal-gtk" ];
 
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -222,6 +206,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.05"; # Did you read the comment?
+  system.stateVersion = "23.11"; # Did you read the comment?
 
 }
